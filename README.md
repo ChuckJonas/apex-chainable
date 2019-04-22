@@ -8,9 +8,9 @@ A framework for managing multiple asynchronous processes in Salesforce.  Uses Qu
 - Fault tolerent.  Failures are tracked and chain can be reprocessed
 - Custom UI to view and debug executions
 
-## Use Cases
+## Example Use case
 
-Primary Use case: You need to perform multiple actions that cannot be completed in a single excution context.  Each actions is depedant on the outcome of the previous action.  If any part of the action fails, you need the ability to correct the errors (via data or metadata changes) and pick up where you left off.
+You need to perform multiple actions that cannot be completed in a single excution context.  Each actions is depedant on the outcome of the previous action.  If any part of the action fails, you need the ability to correct the errors (via data or metadata changes) and pick up where you left off.
 
 ## Limitations
 - A `ChainAction` implemenations must be serializable!
