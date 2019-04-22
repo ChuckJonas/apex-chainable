@@ -1,0 +1,7 @@
+{
+  "auth": {
+    "username": "scratch"
+  },
+  "sObjects": ["Chainable_Link__c"],
+  "outPath": "./app/generated"
+}

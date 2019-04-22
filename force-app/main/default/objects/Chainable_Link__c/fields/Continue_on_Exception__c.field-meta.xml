@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Continue_on_Exception__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Determines if this link will continue execution on an exception</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Determines if this link will continue execution on an exception</inlineHelpText>
+    <label>Continue on Exception</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

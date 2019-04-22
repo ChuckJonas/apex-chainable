@@ -1,0 +1,21 @@
+<apex:page showHeader="true" sidebar="false" standardStylesheets="false" docType="html-5.0">
+    <script type="text/javascript">
+        //rest details
+        const __ACCESSTOKEN__ = '{!$Api.Session_ID}';
+        const __RESTHOST__ = '';
+</script>
+<apex:stylesheet value="https://npmcdn.com/antd/dist/antd.css"/>
+
+    <div id="root"></div>
+    <apex:outputPanel layout="none" rendered="{!$CurrentPage.parameters.local != '1'}">
+        <script type='text/javascript' src="{!URLFOR($Resource.chainable, 'dist/vendors.js')}"></script>
+        <script type='application/json' src="{!URLFOR($Resource.chainable, 'dist/vendors.js.map')}"></script>
+        <script type='text/javascript' src="{!URLFOR($Resource.chainable, 'dist/app.js')}"></script>
+        <script type='application/json' src="{!URLFOR($Resource.chainable, 'dist/app.js.map')}"></script>
+    </apex:outputPanel>
+
+    <apex:outputPanel layout="none" rendered="{!$CurrentPage.parameters.local == '1'}">
+        <script src="https://localhost:8080/vendors.js" ></script>
+        <script src="https://localhost:8080/app.js" ></script>
+    </apex:outputPanel>
+</apex:page>

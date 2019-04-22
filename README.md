@@ -15,7 +15,7 @@ You need to perform multiple actions that cannot be completed in a single excuti
 ## Limitations
 - A `ChainAction` implemenations must be serializable!
 
-## Best Pracices: 
+## Best Pracices:
 
 - Do not seralize entire SObject and then run DML on them later. This may result in you overwriting fields with stale data.  It is best to construct/query the SObject in the action itself if you need to run DML.
 
@@ -25,7 +25,7 @@ You need to perform multiple actions that cannot be completed in a single excuti
 
 ``` apex
 // Telephone action copies previous Telephone actions and appends it's own message to the response
-// - Example of how an action can read response from previous actions 
+// - Example of how an action can read response from previous actions
 public class TelephoneAction extends ChainableAction{
     private String message;
     public TelephoneAction(String message){
@@ -78,3 +78,8 @@ chain.enqueue();
 ``` java
 Chainable.reprocessChain(key, 0, true);
 ```
+
+
+### Viewing Chains
+
+This app comes with a bespoke user interface for insepecting chains (`/apex/chainable`)

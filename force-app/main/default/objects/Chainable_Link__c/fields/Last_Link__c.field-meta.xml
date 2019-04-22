@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Link__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Signifies that there are no more links being processed</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Signifies that there are no more links being processed</inlineHelpText>
+    <label>Last Link</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

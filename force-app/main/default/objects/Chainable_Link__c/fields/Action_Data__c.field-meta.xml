@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Action_Data__c</fullName>
+    <description>Actions that were not completed.  Allows chain to be restarted after an error occurs</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Actions that were not completed.  Allows chain to be restarted after an error occurs</inlineHelpText>
+    <label>Action_Data</label>
+    <length>131072</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>
