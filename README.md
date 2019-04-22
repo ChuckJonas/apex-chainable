@@ -24,33 +24,34 @@ You need to perform multiple actions that cannot be completed in a single excuti
 ### Extend `ChainableAction`
 
 ``` apex
-    //Example of how an action can read response from previous actions
-    public class TelephoneAction extends ChainableAction{
-        private String message;
-        public TelephoneAction(String message){
-            this.message = message;
-        }
-
-        public override Type getType(){
-            return TelephoneAction.class;
-        }
-
-        public override Type getResponseType(){
-            return TelephoneResponse.class;
-        }
-
-        public override Object execute(Chainable chain){
-            //read past messages
-            String s = '';
-            for(ChainableLink link : chain.processedLinks){
-                if(link.completed && link.getType() == TelephoneResponse){
-                    TelephoneResponse prevResp = (TelephoneResponse) link.getResponse();
-                    s += prevResp.message;
-                }
-            }
-            return new TelephoneResponse(s + message);
-        }
+// Telephone action copies previous Telephone actions and appends it's own message to the response
+// - Example of how an action can read response from previous actions 
+public class TelephoneAction extends ChainableAction{
+    private String message;
+    public TelephoneAction(String message){
+        this.message = message;
     }
+
+    public override Type getType(){
+        return TelephoneAction.class;
+    }
+
+    public override Type getResponseType(){
+        return TelephoneResponse.class;
+    }
+
+    public override Object execute(Chainable chain){
+        //read past messages
+        String s = '';
+        for(ChainableLink link : chain.processedLinks){
+            if(link.completed){
+                TelephoneResponse prevResp = (TelephoneResponse) link.getResponse();
+                s += prevResp.message;
+            }
+        }
+        return new TelephoneResponse(s + message);
+    }
+}
 ```
 
 ### Create and Run Chainable
