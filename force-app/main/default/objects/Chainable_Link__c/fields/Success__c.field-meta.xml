@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Success__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Last execution was successful. Set by workflow so it can be used in rollup</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Last execution was successful. Set by workflow so it can be used in rollup</inlineHelpText>
+    <label>Success</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

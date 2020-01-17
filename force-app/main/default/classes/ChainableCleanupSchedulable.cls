@@ -2,11 +2,11 @@
 global class ChainableCleanupSchedulable implements Schedulable {
 
     global void execute(SchedulableContext sc) {
-		for(Chainable_Link__c startingLink : [SELECT Key__c, Link_Position__c
+		for(Chainable_Link__c startingLink : [SELECT Chainable_Job__c, Link_Position__c
                                                 FROM Chainable_Link__c
-                                                WHERE Name = :ChainableLink.CLEANUP_NAME
+                                                WHERE Postponed__c = true
                                                 LIMIT :Limits.getLimitQueueableJobs()]){
-            Chainable ch = Chainable.restoreChain(startingLink.Key__c, Integer.valueOf(startingLink.Link_Position__c));
+            Chainable ch = Chainable.restoreChain(startingLink.Chainable_Job__c, Integer.valueOf(startingLink.Link_Position__c));
             ch.enqueue();
         }
 	}

@@ -1,17 +1,25 @@
-// Place your settings in this file to overwrite default and user settings.
 {
-"tslint.exclude": "**/generated/**/*.ts",
-"typescript.tsdk": "node_modules/typescript/lib",
-"typescriptHero.imports.disableImportsSorting": true,
-"terminal.integrated.env.osx": {
-    "SFDX_SET_CLIENT_IDS": "sfdx-vscode"
-},
-"terminal.integrated.env.linux": {
-    "SFDX_SET_CLIENT_IDS": "sfdx-vscode"
-},
-"terminal.integrated.env.windows": {
-    "SFDX_SET_CLIENT_IDS": "sfdx-vscode"
-},
-"eslint.nodePath": "/Users/jonas/.vscode/extensions/salesforce.salesforcedx-vscode-lwc-45.10.0/node_modules",
-"salesforcedx-vscode-core.show-cli-success-msg": false
+  "salesforcedx-vscode-core.show-cli-success-msg": false,
+  "salesforcedx-vscode-core.push-or-deploy-on-save.enabled": true,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveTimeout": 5000,
+  "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/*-meta.xml": true,
+      "**/bower_components": true,
+      "**/.sfdx": true
+  },
+  "files.exclude": {
+      "**/.git": true,
+      "**/.svn": true,
+      "**/.hg": true,
+      "**/CVS": true,
+      "**/.DS_Store": true,
+      "**/node_modules": true
+  },
+  "eslint.nodePath": "/Users/charlesjonas/Documents/code/salesforcedx-vscode/packages/salesforcedx-vscode-lwc/node_modules",
+  "cSpell.words": [
+    "Chainable"
+  ]
 }

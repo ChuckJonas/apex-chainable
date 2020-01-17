@@ -1,14 +1,11 @@
 /* Author: Charlie Jonas (charlie@callawaycloudconsulting.com)
  *  Description: DTO Container to allow IChainableAction to be serialized between links
-*/
-public virtual class ChainableLink{
-    public static final String UNPROCESSED_NAME = '[unprocessed]';
-    public static final String CLEANUP_NAME = '[cleanup]';
-
-//===LINKING===
+ */
+public virtual class ChainableLink {
+    //===LINKING===
     public ChainableLink parent;
 
-//===CONTROL PROPERTIES===
+    //===CONTROL PROPERTIES===
     //continue executing next links even if this action throws an exception. Defaulted to false
     public Boolean continueOnException = false;
 
@@ -16,7 +13,7 @@ public virtual class ChainableLink{
     //  Must be set to false if making callouts
     public Boolean rollbackOnException = true;
 
-//===STATE PROPERTIES===
+    //===STATE PROPERTIES===
     public Id recordId;
     public String key;
     public String jobId;
@@ -34,12 +31,14 @@ public virtual class ChainableLink{
         }
     }
 
-//===SERIALIZATION DATA===
-    public String actionData {get; private set;}
-    public String actionTypeString {get; private set;}
+    //===SERIALIZATION DATA===
+    public String actionData { get; private set; }
+    public String actionTypeString { get; private set; }
     private transient IChainableAction action;
 
-    public ChainableLink(IChainableAction action){
+    private Chainable_Link__c linkRecord;
+
+    public ChainableLink(IChainableAction action) {
         this.action = action;
         exited = false;
         skipProcessing = false;
@@ -49,10 +48,11 @@ public virtual class ChainableLink{
     }
 
     //restore from link
-    public ChainableLink(Chainable_Link__c record){
+    public ChainableLink(Chainable_Link__c record) {
         //action serialization
         actionData = record.Action_Data__c;
         actionTypeString = record.Action_Type__c;
+        responseType = record.Response_Type__c;
 
         //control properties
         continueOnException = record.Continue_on_Exception__c;
@@ -61,50 +61,54 @@ public virtual class ChainableLink{
         //record details
         recordId = record.Id;
         jobId = record.Name;
-        key = record.Key__c;
+        key = record.Chainable_Job__c;
         position = (Integer) record.Link_Position__c;
-        response = record.Response__c;
-        responseType = record.Response_Type__c;
-        error = record.Error__c;
         exited = record.Last_Link__c;
-        skipProcessing = record.Skip_Processing__c;
+
+        skipProcessing = record.Last_Execution__r != null;
+        response = record.Last_Execution__r.Response__c;
+        error = record.Last_Execution__r.Error__c;
+        executedDate = record.Last_Execution__r.Executed_Date__c;
     }
 
-    public virtual IChainableAction getAction(){
-        if(action == null){
+    public virtual IChainableAction getAction() {
+        if (action == null) {
             Type actionType = Type.forName(actionTypeString);
             action = (IChainableAction) JSON.deserialize(actionData, actionType);
         }
         return action;
     }
 
-    public virtual Object getResponse(){
-        if(response != null && responseType != null){
+    public virtual Object getResponse() {
+        if (response != null && responseType != null) {
             Type respType = Type.forName(responseType);
             return JSON.deserialize(actionData, respType);
         }
         return null;
     }
 
-
-    public Chainable_Link__c toRecord(){
+    public Chainable_Link__c createLinkRecord(Id jobId) {
         Chainable_Link__c linkRecord = new Chainable_Link__c(
-            Name = (jobId!=null ? jobId : UNPROCESSED_NAME),
-            Key__c = key,
-            Response__c = response,
+            Id = recordId,
+            Chainable_Job__c = jobId,
+            Name = actionTypeString + '-' + position,
             Response_Type__c = getAction().getResponseType().getName(),
             Link_Position__c = position,
-            Error__c = error,
-            Has_Error__c = !String.isEmpty(error),
-            Last_Link__c = exited,
             Action_Data__c = actionData,
             Action_Type__c = actionTypeString,
             Continue_on_Exception__c = continueOnException,
-            Rollback_on_Exception__c = rollbackOnException,
-            Executed_Date__c = executedDate,
-            Id = recordId,
-            Skip_Processing__c = skipProcessing
+            Rollback_on_Exception__c = rollbackOnException
         );
+
         return linkRecord;
+    }
+
+    public Chainable_Link_Execution__c createExecutionRecord() {
+        return new Chainable_Link_Execution__c(
+            Chainable_Link__c = recordId,
+            Response__c = response,
+            Executed_Date__c = executedDate,
+            Error__c = error
+        );
     }
 }

@@ -1,11 +1,11 @@
 /**
-  * Unforuntely Salesforce only allows us to execute a single queueable in a test...
-  * This makes it difficult to test
-  */
+ * Unforuntely Salesforce only allows us to execute a single queueable in a test...
+ * This makes it difficult to test
+ */
 @istest
 private class ChainableTests {
-
-    @isTest private static void testInit(){
+    @isTest
+    private static void testInit() {
         ChainableLink[] links = ChainTestingActions.createTelephoneChain('One Two');
 
         Chainable chain = new Chainable(links);
@@ -16,22 +16,36 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(2, recordLinks.size());
 
-        System.assertEquals('One ',((ChainTestingActions.TelephoneResponse) JSON.deserialize(recordLinks[0].Response__c, ChainTestingActions.TelephoneResponse.class)).message );
-        System.assertEquals(chain.key, recordLinks[0].Key__c);
-        System.assertEquals(chain.key, recordLinks[1].Key__c);
+        System.assertEquals(
+            'One ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[0].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
+        System.assertEquals(chain.key, recordLinks[0].Chainable_Job__c);
+        System.assertEquals(chain.key, recordLinks[1].Chainable_Job__c);
 
         links = Chainable.loadChainLink(chain.key);
 
         System.assertEquals(2, links.size());
-        System.assertEquals('One ', ((ChainTestingActions.TelephoneResponse) JSON.deserialize(recordLinks[0].Response__c, ChainTestingActions.TelephoneResponse.class)).message );
+        System.assertEquals(
+            'One ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[0].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
         System.assertEquals(links[0], links[1].parent);
-        chain = new Chainable(links, chain.position+1);
+        chain = new Chainable(links, chain.position + 1);
 
         System.assertEquals(links[1], chain.currentLink);
-
     }
 
-    @isTest private static void testFinal(){
+    @isTest
+    private static void testFinal() {
         ChainableLink[] links = ChainTestingActions.createTelephoneChain('One');
 
         Chainable chain = new Chainable(links);
@@ -42,14 +56,21 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(1, recordLinks.size());
 
-        System.assertEquals(null, recordLinks[0].Error__c);
-        System.assertEquals('One ', ((ChainTestingActions.TelephoneResponse) JSON.deserialize(recordLinks[0].Response__c, ChainTestingActions.TelephoneResponse.class)).message );
-        System.assertEquals(chain.key, recordLinks[0].Key__c);
+        System.assertEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(
+            'One ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[0].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
+        System.assertEquals(chain.key, recordLinks[0].Chainable_Job__c);
         System.assertEquals(true, recordLinks[0].Last_Link__c);
-
     }
 
-    @isTest private static void testContinueOnException(){
+    @isTest
+    private static void testContinueOnException() {
         ChainableLink[] links = new List<ChainableLink>();
         ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
         link.continueOnException = true;
@@ -68,14 +89,13 @@ private class ChainableTests {
 
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.debug(recordLinks);
-        System.assertNotEquals(null, recordLinks[0].Error__c);
-        System.assertNotEquals('[unprocessed]', recordLinks[1].Name);
-        System.assertEquals('[unprocessed]', recordLinks[2].Name);
-        System.assertEquals('Exit Before Processed', recordLinks[2].Error__c);
-
+        System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertNotEquals(null, recordLinks[1].Last_Execution__c);
+        System.assertEquals(null, recordLinks[2].Last_Execution__c);
     }
 
-    @isTest private static void testBreakOnException(){
+    @isTest
+    private static void testBreakOnException() {
         ChainableLink[] links = new List<ChainableLink>();
         ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
         link.continueOnException = false;
@@ -88,12 +108,12 @@ private class ChainableTests {
         Test.stopTest();
 
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
-        System.assertNotEquals(null, recordLinks[0].Error__c);
-        System.assertEquals('Exit Before Processed', recordLinks[1].Error__c);
+        System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(null, recordLinks[1].Last_Execution__c);
     }
 
-
-    @isTest private static void testRollbackOnException(){
+    @isTest
+    private static void testRollbackOnException() {
         ChainableLink[] links = new List<ChainableLink>();
         ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
         link.rollbackOnException = true;
@@ -108,7 +128,8 @@ private class ChainableTests {
         System.assertEquals(0, accs.size());
     }
 
-    @isTest private static void testNoRollbackOnException(){
+    @isTest
+    private static void testNoRollbackOnException() {
         ChainableLink[] links = new List<ChainableLink>();
         ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
         link.rollbackOnException = false;
@@ -123,7 +144,8 @@ private class ChainableTests {
         System.assertEquals(1, accs.size());
     }
 
-    @isTest private static void testReprocessChain(){
+    @isTest
+    private static void testReprocessChainFromBeginning() {
         ChainableLink[] links = ChainTestingActions.createTelephoneChain('One Two');
 
         Chainable chain = new Chainable(links);
@@ -131,7 +153,49 @@ private class ChainableTests {
         //setup first link as if it has been processed
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(2, recordLinks.size());
-        recordLinks[0].Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '));
+        Chainable_Link_Execution__c exec = new Chainable_Link_Execution__c(
+            Chainable_Link__c = recordLinks[0].Id,
+            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '))
+        );
+        insert exec;
+        recordLinks[0].Last_Execution__c = exec.Id;
+        update recordLinks[0];
+
+        chain = Chainable.reprocessChain(chain.key, 0, false);
+        recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(2, recordLinks.size());
+        Test.startTest();
+        chain.enqueue();
+        Test.stopTest();
+
+        recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
+        System.assertEquals(true, recordLinks[1].Last_Link__c);
+        System.assertEquals(
+            'One Two ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[1].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
+    }
+
+    @isTest
+    private static void testReprocessChainFromMid() {
+        ChainableLink[] links = ChainTestingActions.createTelephoneChain('One Two');
+
+        Chainable chain = new Chainable(links);
+
+        //setup first link as if it has been processed
+        List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(2, recordLinks.size());
+        Chainable_Link_Execution__c exec = new Chainable_Link_Execution__c(
+            Chainable_Link__c = recordLinks[0].Id,
+            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '))
+        );
+        insert exec;
+        recordLinks[0].Last_Execution__c = exec.Id;
         update recordLinks[0];
 
         chain = Chainable.reprocessChain(chain.key, 1, false);
@@ -142,15 +206,72 @@ private class ChainableTests {
         Test.stopTest();
 
         recordLinks = ChainableVFSupport.getJobStatus(chain.key);
-        System.assertEquals(null, recordLinks[1].Error__c);
+        System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
         System.assertEquals(true, recordLinks[1].Last_Link__c);
-        System.assertEquals('One Two ',  ((ChainTestingActions.TelephoneResponse) JSON.deserialize(recordLinks[0].Response__c, ChainTestingActions.TelephoneResponse.class)).message );
+        System.assertEquals(
+            'One Two ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[1].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
     }
 
-    @isTest private static void testAppendLinks(){
+    @isTest
+    private static void testReprocessChainFailuresOnly() {
+        ChainableLink[] links = ChainTestingActions.createTelephoneChain('One Two Three');
+
+        Chainable chain = new Chainable(links);
+
+        Datetime firstExecutionDate = DateTime.now();
+
+        //setup first link as if it has been processed
+        List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(3, recordLinks.size());
+        Chainable_Link_Execution__c exec1 = new Chainable_Link_Execution__c(
+            Chainable_Link__c = recordLinks[0].Id,
+            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One ')),
+            Executed_Date__c = firstExecutionDate
+        );
+
+        Chainable_Link_Execution__c exec2 = new Chainable_Link_Execution__c(
+            Chainable_Link__c = recordLinks[1].Id,
+            Error__c = 'FAILED!'
+        );
+
+        insert new List<Chainable_Link_Execution__c>{ exec1, exec2 };
+
+        recordLinks[0].Last_Execution__c = exec1.Id;
+        recordLinks[1].Last_Execution__c = exec2.Id;
+        update new List<Chainable_Link__c>{ recordLinks[0], recordLinks[1] };
+
+        chain = Chainable.reprocessChain(chain.key, 0, true);
+        recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(3, recordLinks.size());
+        Test.startTest();
+        chain.enqueue();
+        Test.stopTest();
+
+        recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(firstExecutionDate, recordLinks[0].Last_Execution__r.Executed_Date__c);
+        System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
+        System.assertEquals(true, recordLinks[2].Last_Link__c);
+        System.assertEquals(
+            'One Two Three ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[2].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
+    }
+
+    @isTest
+    private static void testAppendLinks() {
         ChainableLink link = new ChainableLink(new ChainTestingActions.AppendAction('two three'));
 
-        Chainable chain = new Chainable(new ChainableLink[] { link });
+        Chainable chain = new Chainable(new List<ChainableLink>{ link });
         Test.startTest();
         chain.enqueue();
         Test.stopTest();
@@ -160,11 +281,12 @@ private class ChainableTests {
         System.assertEquals(false, recordLinks[0].Last_Link__c);
     }
 
-    @isTest private static void testCleanup(){
+    @isTest
+    private static void testCleanup() {
         ChainableLink[] links = ChainTestingActions.createTelephoneChain('One');
 
         Chainable chain = new Chainable(links);
-        update new Chainable_Link__c(Id = links[0].recordId, Name = ChainableLink.CLEANUP_NAME);
+        update new Chainable_Link__c(Id = links[0].recordId, Postponed__c = true);
         Test.startTest();
         ChainableCleanupSchedulable cleanup = new ChainableCleanupSchedulable();
         cleanup.execute(null);
@@ -173,11 +295,17 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(1, recordLinks.size());
 
-        System.assertNotEquals(ChainableLink.UNPROCESSED_NAME, recordLinks[0].Name);
-        System.assertEquals(null, recordLinks[0].Error__c);
-        System.assertEquals('One ', ((ChainTestingActions.TelephoneResponse) JSON.deserialize(recordLinks[0].Response__c, ChainTestingActions.TelephoneResponse.class)).message );
-        System.assertEquals(chain.key, recordLinks[0].Key__c);
+        System.assertEquals(false, recordLinks[0].Postponed__c);
+        System.assertEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(
+            'One ',
+            ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
+                    recordLinks[0].Last_Execution__r.Response__c,
+                    ChainTestingActions.TelephoneResponse.class
+                ))
+                .message
+        );
+        System.assertEquals(chain.key, recordLinks[0].Chainable_Job__c);
         System.assertEquals(true, recordLinks[0].Last_Link__c);
     }
-
 }

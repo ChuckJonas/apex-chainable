@@ -10,6 +10,7 @@ public class ChainTestingActions{
             ChainableLink link = new ChainableLink(new TelephoneAction(word));
             links.add(link);
         }
+        system.debug(links.size());
         return links;
     }
 

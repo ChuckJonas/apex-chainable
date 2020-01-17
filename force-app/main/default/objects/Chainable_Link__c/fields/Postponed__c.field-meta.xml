@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Postponed__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description>Checked when the link cannot be executed due to no resource availability.  Will be picked up by the clean-up scheduable</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Checked when the link cannot be executed due to no resource availability.Will be picked up by the clean-up scheduable</inlineHelpText>
+    <label>Postponed</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

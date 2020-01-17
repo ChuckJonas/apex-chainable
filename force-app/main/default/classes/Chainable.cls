@@ -8,7 +8,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
     //list of links to run
     public List<ChainableLink> chainLinks;
 
-    public String key {get; private set;}
+    public Id key {get; private set;}
 
     public ChainableLink currentLink {get; private set;}
 
@@ -37,6 +37,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
 
     //private constructor for re-enqueue
     @TestVisible Chainable(List<ChainableLink> chainLinks, Integer position) {
+        System.debug('Processing ' + chainLinks.size() + ' links from position ' + position);
         this.chainLinks = chainLinks;
         this.position = position;
 
@@ -49,7 +50,11 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
             if(currentLink != null && String.isNotEmpty(currentLink.key)){
                 this.key = currentLink.key;
             }else{
-                this.key = generateGuid();
+                Chainable_Job__c job = new Chainable_Job__c(
+                name = DateTime.now() + ':' + chainLinks.size()
+            );
+            insert job;
+            this.key = job.Id;
             }
         }
     }
@@ -83,7 +88,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
         }else{
             System.debug('-- Delayed Enqueue');
             //update current link so we know it should be caught by the cleanup schedulable
-            update new Chainable_Link__c(Id = currentLink.recordId, Name = ChainableLink.CLEANUP_NAME);
+            update new Chainable_Link__c(Id = currentLink.recordId, Postponed__c = true);
         }
     }
 
@@ -91,6 +96,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
     *  @param   context: injected by salesforce
     */
     public void execute(QueueableContext context){
+        System.debug('Postion: ' + position);
         //get the next link that is set to run
         while(currentLink.skipProcessing){
             position++;
@@ -135,8 +141,14 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
             }
         }
         //save record
-        Chainable_Link__c record = currentLink.toRecord();
-        update record;
+        Chainable_Link_Execution__c execRecord = currentLink.createExecutionRecord();
+        insert execRecord;
+        update new Chainable_Link__c(
+            Id = currentLink.recordId,
+            Last_Execution__c = execRecord.Id,
+            Last_Link__c = currentLink.exited,
+            Postponed__c = false
+        );
 
         //re-enqueue
         if(position < chainLinks.size()-1){
@@ -150,8 +162,6 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
                 	enqueueFuture(this.key, this.position+1);
                 }
 
-            }else if(currentLink.error != null){
-                updateUnprocessedLinks();
             }
         }
     }
@@ -179,6 +189,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
     }
 
     private void createChainLinksRecords(Integer startPos, List<ChainableLink> links){
+
         List<Chainable_Link__c> records = new List<Chainable_Link__c>();
 
         ChainableLink parent;
@@ -194,7 +205,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
 
             ac.key = this.key;
             ac.position = startPos + i;
-            records.add(ac.toRecord());
+            records.add(ac.createLinkRecord(this.key));
         }
         insert records;
         //set recordIds on links
@@ -202,19 +213,6 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
             links[i].recordId = records[i].Id;
         }
     }
-
-
-    //Sets the error on any links that are left unprocessed when the chain must exit due to error
-    private void updateUnprocessedLinks(){
-        List<Chainable_Link__c> records = new List<Chainable_Link__c>();
-        for(Integer i = position+1; i < chainLinks.size(); i++){
-            ChainableLink ac = chainLinks[i];
-            ac.error = 'Exit Before Processed';
-            records.add(ac.toRecord());
-        }
-        update records;
-    }
-
 
 //== STATICS ==
 
@@ -224,29 +222,28 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
     *  @param   failuresOnly: will only reprocess links that failed
     *  @return  A chainable that is ready to enqueue
     */
-    public static Chainable reprocessChain(String key, Integer position, Boolean failuresOnly){
-        ChainableLink[] chainLinks = loadChainLink(key);
-        String newKey = generateGuid();
-        //reset fields so it runs as a new chain
-        for(ChainableLink action : chainLinks){
-            action.key = newKey;
-            action.recordId = null;
-
-            if(failuresOnly && action.error == null){
-                action.skipProcessing = true;
-            }else{
-                action.error = null;
-                action.exited = false;
-                action.jobId = ChainableLink.UNPROCESSED_NAME;
+    public static Chainable reprocessChain(Id key, Integer position, Boolean failuresOnly){
+        Chainable_Link__c[] linksToReprocess = new Chainable_Link__c[]{};
+        ChainableLink[] chainLinks = new ChainableLink[]{};
+        Chainable_Link__c[] prevLinks = queryChainRecords(key);
+        for(Integer i = 0; i < prevLinks.size(); i++){
+            Chainable_Link__c linkRecord = prevLinks[i];
+            if(i >= position
+                && (!failuresOnly || (failuresOnly && linkRecord.Last_Execution__r.Error__c != null) || linkRecord.Last_Execution__r == null)){
+                linkRecord.Last_Execution__r = null;
+                linkRecord.Last_Execution__c = null;
+                linksToReprocess.add(linkRecord);
             }
+            chainLinks.add(new ChainableLink(linkRecord));
         }
 
+        update linksToReprocess;
+
         Chainable chainable = new Chainable(chainLinks, position);
-        chainable.createChainLinksRecords(0, chainLinks);
         return chainable;
     }
 
-    public static Chainable restoreChain(String key, Integer position){
+    public static Chainable restoreChain(Id key, Integer position){
         ChainableLink[] chainLinks = loadChainLink(key);
         return new Chainable(chainLinks, position);
     }
@@ -260,7 +257,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
     }
 
     //used to reload the records as Chain Links
-    @TestVisible static List<ChainableLink> loadChainLink(String key){
+    @TestVisible static List<ChainableLink> loadChainLink(Id key){
         List<ChainableLink> chainLinks = new List<ChainableLink>();
         ChainableLink parent;
         for(Chainable_Link__c linkRecord : queryChainRecords(key)){
@@ -273,14 +270,15 @@ public class Chainable implements Queueable, Database.AllowsCallouts{
     }
 
     //query records
-    private static List<Chainable_Link__c> queryChainRecords(String key){
-        return [SELECT Name, Key__c,
-                        Link_Position__c, Response__c,
+    private static List<Chainable_Link__c> queryChainRecords(Id key){
+        return [SELECT Name, Chainable_Job__c,
+                        Link_Position__c,
                         Response_Type__c, Action_Data__c,
-                        Action_Type__c, Error__c,
+                        Action_Type__c, Last_Execution__c, Last_Execution__r.Error__c,
+                        Last_Execution__r.Response__c, Last_Execution__r.Executed_Date__c,
                         Last_Link__c, Continue_on_Exception__c,
-                        Rollback_on_Exception__c, Skip_Processing__c
-                        FROM Chainable_Link__c WHERE Key__c = :key
+                        Rollback_on_Exception__c
+                        FROM Chainable_Link__c WHERE Chainable_Job__c = :key
                         ORDER BY Link_Position__c ASC];
     }
 
