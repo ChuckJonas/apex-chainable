@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Completed_Links__c</fullName>
+    <description>The number of links which have succesfully run</description>
+    <externalId>false</externalId>
+    <inlineHelpText>The number of links which have succesfully run</inlineHelpText>
+    <label>Links</label>
+    <summaryForeignKey>Chainable_Link__c.Chainable_Job__c</summaryForeignKey>
+    <summaryOperation>count</summaryOperation>
+    <trackTrending>false</trackTrending>
+    <type>Summary</type>
+</CustomField>

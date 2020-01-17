@@ -39,7 +39,7 @@ private class ChainableTests {
                 .message
         );
         System.assertEquals(links[0], links[1].parent);
-        chain = new Chainable(links, chain.position + 1);
+        chain = new Chainable(links, chain.position + 1, null);
 
         System.assertEquals(links[1], chain.currentLink);
     }
@@ -66,6 +66,7 @@ private class ChainableTests {
                 .message
         );
         System.assertEquals(chain.key, recordLinks[0].Chainable_Job__c);
+        System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Job_Id__c);
         System.assertEquals(true, recordLinks[0].Last_Link__c);
     }
 
@@ -90,6 +91,7 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.debug(recordLinks);
         System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(false, recordLinks[0].Success__c);
         System.assertNotEquals(null, recordLinks[1].Last_Execution__c);
         System.assertEquals(null, recordLinks[2].Last_Execution__c);
     }
@@ -109,6 +111,7 @@ private class ChainableTests {
 
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(false, recordLinks[0].Success__c);
         System.assertEquals(null, recordLinks[1].Last_Execution__c);
     }
 
@@ -154,6 +157,7 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(2, recordLinks.size());
         Chainable_Link_Execution__c exec = new Chainable_Link_Execution__c(
+            Job_Id__c = 'a1',
             Chainable_Link__c = recordLinks[0].Id,
             Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '))
         );
@@ -163,6 +167,12 @@ private class ChainableTests {
 
         chain = Chainable.reprocessChain(chain.key, 0, false);
         recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(1, [SELECT Id FROM Chainable_Job__c].size());
+        for (Chainable_Link__c linkRecord : recordLinks) {
+            System.assertEquals(null, linkRecord.Last_Execution__c);
+            System.assertEquals(false, linkRecord.Success__c);
+            System.assertEquals(false, linkRecord.Processed__c);
+        }
         System.assertEquals(2, recordLinks.size());
         Test.startTest();
         chain.enqueue();
@@ -170,6 +180,7 @@ private class ChainableTests {
 
         recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
+        System.assertEquals(true, recordLinks[0].Success__c);
         System.assertEquals(true, recordLinks[1].Last_Link__c);
         System.assertEquals(
             'One Two ',
@@ -191,6 +202,7 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(2, recordLinks.size());
         Chainable_Link_Execution__c exec = new Chainable_Link_Execution__c(
+            Job_Id__c = 'a1',
             Chainable_Link__c = recordLinks[0].Id,
             Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '))
         );
@@ -230,12 +242,14 @@ private class ChainableTests {
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
         System.assertEquals(3, recordLinks.size());
         Chainable_Link_Execution__c exec1 = new Chainable_Link_Execution__c(
+            Job_Id__c = 'a1',
             Chainable_Link__c = recordLinks[0].Id,
             Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One ')),
             Executed_Date__c = firstExecutionDate
         );
 
         Chainable_Link_Execution__c exec2 = new Chainable_Link_Execution__c(
+            Job_Id__c = 'a2',
             Chainable_Link__c = recordLinks[1].Id,
             Error__c = 'FAILED!'
         );

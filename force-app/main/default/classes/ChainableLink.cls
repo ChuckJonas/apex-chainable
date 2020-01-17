@@ -60,11 +60,11 @@ public virtual class ChainableLink {
 
         //record details
         recordId = record.Id;
-        jobId = record.Name;
         key = record.Chainable_Job__c;
         position = (Integer) record.Link_Position__c;
         exited = record.Last_Link__c;
 
+        jobId = record.Last_Execution__r.Job_Id__c;
         skipProcessing = record.Last_Execution__r != null;
         response = record.Last_Execution__r.Response__c;
         error = record.Last_Execution__r.Error__c;
@@ -106,6 +106,7 @@ public virtual class ChainableLink {
     public Chainable_Link_Execution__c createExecutionRecord() {
         return new Chainable_Link_Execution__c(
             Chainable_Link__c = recordId,
+            Job_Id__c = jobId,
             Response__c = response,
             Executed_Date__c = executedDate,
             Error__c = error
