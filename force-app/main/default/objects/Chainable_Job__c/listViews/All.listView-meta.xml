@@ -3,8 +3,12 @@
     <fullName>All</fullName>
     <columns>NAME</columns>
     <columns>CREATED_DATE</columns>
-    <columns>Links__c</columns>
     <columns>CREATEDBY_USER</columns>
+    <columns>Links__c</columns>
+    <columns>Completed__c</columns>
+    <columns>Processed_Links__c</columns>
+    <columns>Completed_Links__c</columns>
+    <columns>Failed_Links__c</columns>
     <filterScope>Everything</filterScope>
     <label>All</label>
 </ListView>

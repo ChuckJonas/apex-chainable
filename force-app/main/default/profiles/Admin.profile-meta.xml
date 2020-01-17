@@ -45,12 +45,27 @@
     <custom>false</custom>
     <fieldPermissions>
         <editable>false</editable>
+        <field>Chainable_Job__c.Completed_Links__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Chainable_Job__c.Completed__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Chainable_Job__c.Failed_Links__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
         <field>Chainable_Job__c.Links__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
-        <editable>true</editable>
-        <field>Chainable_Job__c.Postponed__c</field>
+        <editable>false</editable>
+        <field>Chainable_Job__c.Processed_Links__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
@@ -101,6 +116,11 @@
     <fieldPermissions>
         <editable>true</editable>
         <field>Chainable_Link__c.Postponed__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Chainable_Link__c.Processed__c</field>
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>

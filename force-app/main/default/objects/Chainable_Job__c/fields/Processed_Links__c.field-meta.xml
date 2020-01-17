@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>Completed_Links__c</fullName>
-    <description>The number of links which have succesfully run</description>
+    <fullName>Processed_Links__c</fullName>
+    <description>The number of links which have run</description>
     <externalId>false</externalId>
-    <inlineHelpText>The number of links which have succesfully run</inlineHelpText>
-    <label>Completed Links</label>
+    <inlineHelpText>The number of links which have run</inlineHelpText>
+    <label>Processed Links</label>
     <summaryFilterItems>
-        <field>Chainable_Link__c.Success__c</field>
+        <field>Chainable_Link__c.Processed__c</field>
         <operation>equals</operation>
         <value>True</value>
     </summaryFilterItems>
