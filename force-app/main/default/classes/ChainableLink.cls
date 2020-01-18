@@ -45,6 +45,7 @@ public virtual class ChainableLink {
 
         actionData = JSON.serialize(action);
         actionTypeString = action.getType().getName();
+        responseType = getAction().getResponseType().getName();
     }
 
     //restore from link
@@ -82,7 +83,7 @@ public virtual class ChainableLink {
     public virtual Object getResponse() {
         if (response != null && responseType != null) {
             Type respType = Type.forName(responseType);
-            return JSON.deserialize(actionData, respType);
+            return JSON.deserialize(response, respType);
         }
         return null;
     }
@@ -92,7 +93,7 @@ public virtual class ChainableLink {
             Id = recordId,
             Chainable_Job__c = jobId,
             Name = actionTypeString + '-' + position,
-            Response_Type__c = getAction().getResponseType().getName(),
+            Response_Type__c = responseType,
             Link_Position__c = position,
             Action_Data__c = actionData,
             Action_Type__c = actionTypeString,

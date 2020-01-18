@@ -70,7 +70,7 @@ for(Integer i = 0; i < words.size(); i++){
 Chainable chain = new Chainable(links);
 String key = chain.key; //Save this somewhere if you want to check status / rerun
 
-// enqueue executation
+// enqueue execution
 chain.enqueue();
 ````
 

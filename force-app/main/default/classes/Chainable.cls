@@ -230,6 +230,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
     public static Chainable reprocessChain(Id key, Integer position, Boolean failuresOnly) {
         Chainable_Link__c[] linksToReprocess = new List<Chainable_Link__c>{};
         ChainableLink[] chainLinks = new List<ChainableLink>{};
+        ChainableLink parent = null;
         Chainable_Link__c[] prevLinks = queryChainRecords(key);
         for (Integer i = 0; i < prevLinks.size(); i++) {
             Chainable_Link__c linkRecord = prevLinks[i];
@@ -248,7 +249,10 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
                 linkRecord.Processed__c = false;
                 linksToReprocess.add(linkRecord);
             }
-            chainLinks.add(new ChainableLink(linkRecord));
+            ChainableLink link = new ChainableLink(linkRecord);
+            link.parent = parent;
+            parent = link;
+            chainLinks.add(link);
         }
 
         update linksToReprocess;

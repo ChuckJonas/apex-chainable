@@ -58,5 +58,5 @@
     </nameField>
     <pluralLabel>Chainable Links</pluralLabel>
     <searchLayouts/>
-    <sharingModel>ReadWrite</sharingModel>
+    <sharingModel>ControlledByParent</sharingModel>
 </CustomObject>

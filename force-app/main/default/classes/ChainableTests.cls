@@ -1,7 +1,3 @@
-/**
- * Unforuntely Salesforce only allows us to execute a single queueable in a test...
- * This makes it difficult to test
- */
 @istest
 private class ChainableTests {
     @isTest
@@ -17,7 +13,7 @@ private class ChainableTests {
         System.assertEquals(2, recordLinks.size());
 
         System.assertEquals(
-            'One ',
+            'One',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[0].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
@@ -31,7 +27,7 @@ private class ChainableTests {
 
         System.assertEquals(2, links.size());
         System.assertEquals(
-            'One ',
+            'One',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[0].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
@@ -58,7 +54,7 @@ private class ChainableTests {
 
         System.assertEquals(null, recordLinks[0].Last_Execution__r.Error__c);
         System.assertEquals(
-            'One ',
+            'One',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[0].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
@@ -159,7 +155,7 @@ private class ChainableTests {
         Chainable_Link_Execution__c exec = new Chainable_Link_Execution__c(
             Job_Id__c = 'a1',
             Chainable_Link__c = recordLinks[0].Id,
-            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '))
+            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One'))
         );
         insert exec;
         recordLinks[0].Last_Execution__c = exec.Id;
@@ -183,7 +179,7 @@ private class ChainableTests {
         System.assertEquals(true, recordLinks[0].Success__c);
         System.assertEquals(true, recordLinks[1].Last_Link__c);
         System.assertEquals(
-            'One Two ',
+            'One Two',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[1].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
@@ -204,7 +200,7 @@ private class ChainableTests {
         Chainable_Link_Execution__c exec = new Chainable_Link_Execution__c(
             Job_Id__c = 'a1',
             Chainable_Link__c = recordLinks[0].Id,
-            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One '))
+            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One'))
         );
         insert exec;
         recordLinks[0].Last_Execution__c = exec.Id;
@@ -221,7 +217,7 @@ private class ChainableTests {
         System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
         System.assertEquals(true, recordLinks[1].Last_Link__c);
         System.assertEquals(
-            'One Two ',
+            'One Two',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[1].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
@@ -244,7 +240,7 @@ private class ChainableTests {
         Chainable_Link_Execution__c exec1 = new Chainable_Link_Execution__c(
             Job_Id__c = 'a1',
             Chainable_Link__c = recordLinks[0].Id,
-            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One ')),
+            Response__c = JSON.serialize(new ChainTestingActions.TelephoneResponse('One')),
             Executed_Date__c = firstExecutionDate
         );
 
@@ -272,7 +268,7 @@ private class ChainableTests {
         System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
         System.assertEquals(true, recordLinks[2].Last_Link__c);
         System.assertEquals(
-            'One Two Three ',
+            'One Two Three',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[2].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
@@ -312,7 +308,7 @@ private class ChainableTests {
         System.assertEquals(false, recordLinks[0].Postponed__c);
         System.assertEquals(null, recordLinks[0].Last_Execution__r.Error__c);
         System.assertEquals(
-            'One ',
+            'One',
             ((ChainTestingActions.TelephoneResponse) JSON.deserialize(
                     recordLinks[0].Last_Execution__r.Response__c,
                     ChainTestingActions.TelephoneResponse.class
