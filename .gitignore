@@ -22,3 +22,5 @@ config/cert/*.crt
 config/cert/*.key
 
 .vim-force
+
+dist
