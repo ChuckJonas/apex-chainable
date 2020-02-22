@@ -24,6 +24,8 @@ public virtual class ChainableLink {
     public String error;
     public Boolean exited;
     public Boolean skipProcessing;
+    public Integer immediateRetries;
+    public Integer immediateAttempts;
 
     public Boolean completed {
         get {
@@ -43,6 +45,8 @@ public virtual class ChainableLink {
         exited = false;
         skipProcessing = false;
 
+        immediateRetries = 0;
+        immediateAttempts = 0;
         actionData = JSON.serialize(action);
         actionTypeString = action.getType().getName();
         responseType = getAction().getResponseType().getName();
@@ -70,6 +74,9 @@ public virtual class ChainableLink {
         response = record.Last_Execution__r.Response__c;
         error = record.Last_Execution__r.Error__c;
         executedDate = record.Last_Execution__r.Executed_Date__c;
+
+        immediateAttempts = (Integer) record.Immediate_Attempts__c;
+        immediateRetries = (Integer) record.Immediate_Retries__c;
     }
 
     public virtual IChainableAction getAction() {
@@ -98,7 +105,9 @@ public virtual class ChainableLink {
             Action_Data__c = actionData,
             Action_Type__c = actionTypeString,
             Continue_on_Exception__c = continueOnException,
-            Rollback_on_Exception__c = rollbackOnException
+            Rollback_on_Exception__c = rollbackOnException,
+            Immediate_Attempts__c = immediateAttempts,
+            Immediate_Retries__c = immediateRetries
         );
 
         return linkRecord;

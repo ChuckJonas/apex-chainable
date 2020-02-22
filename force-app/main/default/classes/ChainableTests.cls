@@ -1,12 +1,28 @@
-@istest
+@isTest
 private class ChainableTests {
+    @isTest
+    private static void testEmptyInit() {
+        Test.startTest();
+        try {
+            Chainable nullChain = new Chainable(null);
+            System.assert(false, 'Should have thrown exception');
+        } catch (Chainable.ChainableException e) {
+        }
+
+        Chainable emptyChain = new Chainable(new List<ChainableLink>{});
+        emptyChain.enqueue();
+        Test.stopTest();
+
+        System.assertEquals(0, [SELECT Id FROM Chainable_Job__c].size());
+    }
+
     @isTest
     private static void testInit() {
         ChainableLink[] links = ChainTestingActions.createTelephoneChain('One Two');
 
         Chainable chain = new Chainable(links);
         Test.startTest();
-        System.enqueueJob(chain);
+        chain.enqueue();
         Test.stopTest();
 
         List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
@@ -64,20 +80,22 @@ private class ChainableTests {
         System.assertEquals(chain.key, recordLinks[0].Chainable_Job__c);
         System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Job_Id__c);
         System.assertEquals(true, recordLinks[0].Last_Link__c);
+        Chainable_Link_Execution__c[] executions = [SELECT Id FROM Chainable_Link_Execution__c WHERE Chainable_Link__c = :recordLinks[0].Id];
+        System.assertEquals(1, executions.size());
     }
 
     @isTest
     private static void testContinueOnException() {
         ChainableLink[] links = new List<ChainableLink>();
-        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
+        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction());
         link.continueOnException = true;
         links.add(link);
-        ChainableLink link2 = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
+        ChainableLink link2 = new ChainableLink(new ChainTestingActions.ExceptionAction());
         link2.continueOnException = false;
         links.add(link2);
 
         //3rd link will not run
-        links.add(new ChainableLink(new ChainTestingActions.ExceptionAction('abc')));
+        links.add(new ChainableLink(new ChainTestingActions.ExceptionAction()));
 
         Chainable chain = new Chainable(links);
         Test.startTest();
@@ -88,6 +106,9 @@ private class ChainableTests {
         System.debug(recordLinks);
         System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Error__c);
         System.assertEquals(false, recordLinks[0].Success__c);
+        Chainable_Link_Execution__c[] executions = [SELECT Id FROM Chainable_Link_Execution__c WHERE Chainable_Link__c = :recordLinks[0].Id];
+        System.assertEquals(1, executions.size());
+
         System.assertNotEquals(null, recordLinks[1].Last_Execution__c);
         System.assertEquals(null, recordLinks[2].Last_Execution__c);
     }
@@ -95,10 +116,10 @@ private class ChainableTests {
     @isTest
     private static void testBreakOnException() {
         ChainableLink[] links = new List<ChainableLink>();
-        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
+        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction());
         link.continueOnException = false;
         links.add(link);
-        links.add(new ChainableLink(new ChainTestingActions.ExceptionAction('abc')));
+        links.add(new ChainableLink(new ChainTestingActions.ExceptionAction()));
 
         Chainable chain = new Chainable(links);
         Test.startTest();
@@ -112,9 +133,77 @@ private class ChainableTests {
     }
 
     @isTest
+    private static void testRetryOnException() {
+        ChainableLink[] links = new List<ChainableLink>();
+        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction());
+        link.immediateRetries = 2;
+        links.add(link);
+
+        Chainable chain = new Chainable(links);
+        Test.startTest();
+        chain.enqueue();
+        Test.stopTest();
+
+        List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.debug(recordLinks);
+        System.assertNotEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(false, recordLinks[0].Success__c);
+        Chainable_Link_Execution__c[] executions = [SELECT Id FROM Chainable_Link_Execution__c WHERE Chainable_Link__c = :recordLinks[0].Id];
+        System.assertEquals(3, executions.size());
+    }
+
+    @isTest
+    private static void testRetryOnExceptionAndPass() {
+        ChainableLink[] links = new List<ChainableLink>();
+        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction(2));
+        link.immediateRetries = 5;
+        links.add(link);
+        links.add(new ChainableLink(new ChainTestingActions.ExceptionAction(0)));
+        links.add(new ChainableLink(new ChainTestingActions.ExceptionAction(0)));
+
+        Chainable chain = new Chainable(links);
+        Test.startTest();
+        chain.enqueue();
+        Test.stopTest();
+
+        List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+        System.assertEquals(3, recordLinks.size());
+        System.assertEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+        System.assertEquals(true, recordLinks[0].Success__c);
+        Chainable_Link_Execution__c[] executions = [SELECT Id FROM Chainable_Link_Execution__c WHERE Chainable_Link__c = :recordLinks[0].Id];
+        System.assertEquals(3, executions.size());
+        System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
+        System.assertEquals(true, recordLinks[1].Success__c);
+        System.assertEquals(null, recordLinks[2].Last_Execution__r.Error__c);
+        System.assertEquals(true, recordLinks[2].Success__c);
+    }
+
+    @isTest
+    private static void testDoNotRetryOnSuccess() {
+      ChainableLink[] links = ChainTestingActions.createTelephoneChain('One Two');
+      links[0].immediateRetries = 2;
+      Chainable chain = new Chainable(links);
+      Test.startTest();
+      chain.enqueue();
+      Test.stopTest();
+
+      List<Chainable_Link__c> recordLinks = ChainableVFSupport.getJobStatus(chain.key);
+      System.assertEquals(2, recordLinks.size());
+
+      System.assertEquals(null, recordLinks[0].Last_Execution__r.Error__c);
+      System.assertNotEquals(null, recordLinks[0].Last_Execution__c);
+      Chainable_Link_Execution__c[] executions = [SELECT Id FROM Chainable_Link_Execution__c WHERE Chainable_Link__c = :recordLinks[0].Id];
+      System.assertEquals(1, executions.size());
+      System.assertEquals(null, recordLinks[1].Last_Execution__r.Error__c);
+      System.assertNotEquals(null, recordLinks[1].Last_Execution__c);
+      System.assertEquals(true, recordLinks[1].Last_Link__c);
+    }
+
+
+    @isTest
     private static void testRollbackOnException() {
         ChainableLink[] links = new List<ChainableLink>();
-        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
+        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction());
         link.rollbackOnException = true;
         links.add(link);
 
@@ -123,14 +212,14 @@ private class ChainableTests {
         chain.enqueue();
         Test.stopTest();
 
-        List<Account> accs = [SELECT Id FROM Account WHERE Name = 'abc'];
+        List<Account> accs = [SELECT Id FROM Account WHERE Name = :ChainTestingActions.CASE_NAME];
         System.assertEquals(0, accs.size());
     }
 
     @isTest
     private static void testNoRollbackOnException() {
         ChainableLink[] links = new List<ChainableLink>();
-        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction('abc'));
+        ChainableLink link = new ChainableLink(new ChainTestingActions.ExceptionAction());
         link.rollbackOnException = false;
         links.add(link);
 
@@ -139,7 +228,7 @@ private class ChainableTests {
         chain.enqueue();
         Test.stopTest();
 
-        List<Case> accs = [SELECT Id FROM Case WHERE Subject = 'abc'];
+        List<Case> accs = [SELECT Id FROM Case WHERE Subject = :ChainTestingActions.CASE_NAME];
         System.assertEquals(1, accs.size());
     }
 

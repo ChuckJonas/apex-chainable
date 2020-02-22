@@ -30,28 +30,33 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
     /* public constructor
      *  @param chainLinks: list of ChainableLink which define the work that will be done in this chain
      */
-    public Chainable(List<ChainableLink> chainLinks, String description) {
-        this(chainLinks, 0, description);
-        createChainLinksRecords(0, chainLinks);
+    public Chainable(List<ChainableLink> chainLinks) {
+        this(chainLinks, chainLinks != null ? DateTime.now() + ' - ' + chainLinks.size() : '');
     }
 
     /* public constructor
      *  @param chainLinks: list of ChainableLink which define the work that will be done in this chain
      */
-    public Chainable(List<ChainableLink> chainLinks) {
-        this(chainLinks, DateTime.now() + ' - ' + chainLinks.size());
+    public Chainable(List<ChainableLink> chainLinks, String description) {
+        this(chainLinks, 0, description);
+        createChainLinksRecords(0, chainLinks);
     }
 
     //private constructor for re-enqueue
     @TestVisible
     Chainable(List<ChainableLink> chainLinks, Integer position, String description) {
-        System.debug('Processing ' + chainLinks.size() + ' links from position ' + position);
         this.chainLinks = chainLinks;
         this.position = position;
 
-        if (chainLinks != null && chainLinks.size() > 0) {
-            this.currentLink = chainLinks[this.position];
+        if (chainLinks == null) {
+            throw new ChainableException('chainLinks cannot be null!');
         }
+
+        if (chainLinks.size() == 0) {
+            return;
+        }
+
+        this.currentLink = chainLinks[this.position];
 
         if (this.key == null) {
             //reinstates the key if this is a chained context
@@ -79,7 +84,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
      * @description Logic to enqueue chain.  Checks limits and enqueues in future if possible
      */
     public void enqueue() {
-        if (this.currentLink == null) {
+        if (this.currentLink == null || chainLinks.size() == 0) {
             return;
         }
         System.debug('Trying to Enqueue: ' + this.key);
@@ -123,11 +128,14 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
             sp = Database.setSavepoint();
         }
 
+        Integer remainingAttempts = currentLink.immediateRetries - currentLink.immediateAttempts;
+        currentLink.immediateAttempts++;
         try {
             IChainableAction action = currentLink.getAction();
 
             //execute action
             Object result = action.execute(this);
+
             if (result != null) {
                 currentLink.response = JSON.serialize(result);
             }
@@ -141,7 +149,7 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
                 Database.rollback(sp);
             }
             currentLink.error = (e.getMessage() + '\n ' + e.getStackTraceString()).left(131071);
-            if (!currentLink.continueOnException || position == chainLinks.size() - 1) {
+            if (remainingAttempts < 1 && (!currentLink.continueOnException || position == chainLinks.size() - 1)) {
                 currentLink.exited = true;
             }
         }
@@ -155,19 +163,23 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
             Last_Execution__c = execRecord.Id,
             Success__c = String.isEmpty(execRecord.Error__c),
             Last_Link__c = currentLink.exited,
-            Postponed__c = false
+            Postponed__c = false,
+            Immediate_Attempts__c = currentLink.immediateAttempts
         );
 
+        Boolean enqueueForRetry = currentLink.error != null && remainingAttempts > 0;
         //re-enqueue
-        if (position < chainLinks.size() - 1) {
-            if (currentLink.error == null || currentLink.continueOnException) {
+        if (position < chainLinks.size() - 1 || enqueueForRetry) {
+            if (currentLink.error == null || currentLink.continueOnException || remainingAttempts > 0) {
+                Integer nextPosition = enqueueForRetry ? this.position : this.position + 1;
+
                 //run next link
                 if (Test.isRunningTest()) {
-                    this.position++;
+                    this.position = nextPosition;
                     this.currentLink = chainLinks[position];
                     this.execute(context);
                 } else {
-                    enqueueFuture(this.key, this.position + 1);
+                    enqueueFuture(this.key, nextPosition);
                 }
             }
         }
@@ -305,7 +317,9 @@ public class Chainable implements Queueable, Database.AllowsCallouts {
                 Last_Execution__r.Executed_Date__c,
                 Last_Link__c,
                 Continue_on_Exception__c,
-                Rollback_on_Exception__c
+                Rollback_on_Exception__c,
+                Immediate_Attempts__c,
+                Immediate_Retries__c
             FROM Chainable_Link__c
             WHERE Chainable_Job__c = :key
             ORDER BY Link_Position__c ASC

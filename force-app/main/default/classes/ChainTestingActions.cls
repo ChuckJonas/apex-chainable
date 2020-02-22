@@ -1,5 +1,6 @@
 // @isTest
 public class ChainTestingActions {
+
     public static ChainableLink[] createTelephoneChain(String s) {
         String[] words = s.split(' ');
 
@@ -63,10 +64,16 @@ public class ChainTestingActions {
         }
     }
 
+    public static Integer EXCEPTION_EXECUTIONS = 0;
+    public static String CASE_NAME = 'abc123';
     public class ExceptionAction extends ChainableAction {
-        public String caseName;
-        public ExceptionAction(String caseName) {
-            this.caseName = caseName;
+        public Integer succeedAfter;
+        public ExceptionAction(Integer succeedAfter) {
+            this.succeedAfter = succeedAfter;
+        }
+
+        public ExceptionAction() {
+          this(999);
         }
 
         public override Type getType() {
@@ -74,10 +81,12 @@ public class ChainTestingActions {
         }
 
         public override Object execute(Chainable chain) {
-            Case c = new Case(Subject = caseName);
-            System.debug(c);
+            EXCEPTION_EXECUTIONS++;
+            Case c = new Case(Subject = CASE_NAME);
             insert c;
-            Decimal d = 1 / 0;
+            if(EXCEPTION_EXECUTIONS <= succeedAfter){
+              Decimal d = 1 / 0;
+            }
             return null;
         }
     }

@@ -24,7 +24,9 @@ global class ChainableVFSupport {
                 Response_Type__c,
                 Link_Position__c,
                 Last_Link__c,
-                CreatedDate
+                CreatedDate,
+                Immediate_Attempts__c,
+                Immediate_Retries__c
             FROM Chainable_Link__c
             WHERE Chainable_Job__c = :key
             ORDER BY Link_Position__c ASC

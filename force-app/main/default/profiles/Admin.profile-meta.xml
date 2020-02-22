@@ -1,15 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Profile xmlns="http://soap.sforce.com/2006/04/metadata">
-    <applicationVisibilities>
-        <application>standard__LightningBolt</application>
-        <default>false</default>
-        <visible>true</visible>
-    </applicationVisibilities>
-    <applicationVisibilities>
-        <application>standard__LightningSales</application>
-        <default>false</default>
-        <visible>true</visible>
-    </applicationVisibilities>
     <classAccesses>
         <apexClass>ChainTestingActions</apexClass>
         <enabled>true</enabled>
@@ -100,6 +90,16 @@
     </fieldPermissions>
     <fieldPermissions>
         <editable>true</editable>
+        <field>Chainable_Link__c.Immediate_Attempts__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Chainable_Link__c.Immediate_Retries__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
         <field>Chainable_Link__c.Last_Execution__c</field>
         <readable>true</readable>
     </fieldPermissions>
@@ -138,12 +138,6 @@
         <field>Chainable_Link__c.Success__c</field>
         <readable>true</readable>
     </fieldPermissions>
-    <layoutAssignments>
-        <layout>Chainable_Job__c-Chainable Job Layout</layout>
-    </layoutAssignments>
-    <layoutAssignments>
-        <layout>Chainable_Link_Execution__c-Chainable Link Execution Layout</layout>
-    </layoutAssignments>
     <layoutAssignments>
         <layout>Chainable_Link__c-Chainable Link Layout</layout>
     </layoutAssignments>
@@ -273,6 +267,10 @@
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
+        <name>ConsentApiUpdate</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
         <name>ContentAdministrator</name>
     </userPermissions>
     <userPermissions>
@@ -282,10 +280,6 @@
     <userPermissions>
         <enabled>true</enabled>
         <name>ConvertLeads</name>
-    </userPermissions>
-    <userPermissions>
-        <enabled>true</enabled>
-        <name>CreateContentSpace</name>
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
@@ -474,6 +468,10 @@
     <userPermissions>
         <enabled>true</enabled>
         <name>ManageBusinessHourHolidays</name>
+    </userPermissions>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ManageCMS</name>
     </userPermissions>
     <userPermissions>
         <enabled>true</enabled>
