@@ -5,7 +5,13 @@
             "default": true,
             "package": "apex-chainable",
             "versionName": "ver 0.1",
-            "versionNumber": "0.1.0.NEXT"
+            "versionNumber": "0.1.0.NEXT",
+            "dependencies": [
+                {
+                    "package": "lwc-json-view",
+                    "versionNumber": "0.1.0.NEXT"
+                }
+            ]
         }
     ],
     "namespace": "",
@@ -13,6 +19,7 @@
     "sourceApiVersion": "40.0",
     "packageAliases": {
         "apex-chainable": "0Ho1C000000002MSAQ",
-        "apex-chainable@0.1.0-1": "04t1C000000goHAQAY"
+        "apex-chainable@0.1.0-1": "04t1C000000goHAQAY",
+        "lwc-json-view": "0Ho1C000000002HSAQ"
     }
 }
