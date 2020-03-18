@@ -4,12 +4,12 @@
             "path": "force-app",
             "default": true,
             "package": "apex-chainable",
-            "versionName": "ver 0.1",
-            "versionNumber": "0.1.0.NEXT",
+            "versionName": "ver 0.2",
+            "versionNumber": "0.1.1.NEXT",
             "dependencies": [
                 {
                     "package": "lwc-json-view",
-                    "versionNumber": "0.1.0.NEXT"
+                    "versionNumber": "0.1.0.LATEST"
                 }
             ]
         }
@@ -20,6 +20,7 @@
     "packageAliases": {
         "apex-chainable": "0Ho1C000000002MSAQ",
         "apex-chainable@0.1.0-1": "04t1C000000goHAQAY",
-        "lwc-json-view": "0Ho1C000000002HSAQ"
+        "lwc-json-view": "0Ho1C000000002HSAQ",
+        "apex-chainable@0.1.1-1": "04t1C000000goHFQAY"
     }
 }
