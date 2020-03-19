@@ -89,6 +89,11 @@
         <readable>true</readable>
     </fieldPermissions>
     <fieldPermissions>
+        <editable>false</editable>
+        <field>Chainable_Link__c.Executions__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
         <editable>true</editable>
         <field>Chainable_Link__c.Immediate_Attempts__c</field>
         <readable>true</readable>
@@ -139,6 +144,12 @@
         <readable>true</readable>
     </fieldPermissions>
     <layoutAssignments>
+        <layout>Chainable_Job__c-Chainable Job Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
+        <layout>Chainable_Link_Execution__c-Chainable Link Execution Layout</layout>
+    </layoutAssignments>
+    <layoutAssignments>
         <layout>Chainable_Link__c-Chainable Link Layout</layout>
     </layoutAssignments>
     <objectPermissions>
@@ -168,6 +179,14 @@
         <object>Chainable_Link__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <pageAccesses>
+        <apexPage>ChainableLinkExecutionJsonViewPage</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
+    <pageAccesses>
+        <apexPage>ChainableLinkJsonViewPage</apexPage>
+        <enabled>true</enabled>
+    </pageAccesses>
     <tabVisibilities>
         <tab>Chainable_Job__c</tab>
         <visibility>DefaultOn</visibility>
