@@ -1,25 +1,22 @@
 {
-  "salesforcedx-vscode-core.show-cli-success-msg": false,
-  "salesforcedx-vscode-core.push-or-deploy-on-save.enabled": true,
-  "editor.formatOnSave": true,
-  "editor.formatOnSaveTimeout": 5000,
-  "search.exclude": {
-      "**/node_modules": true,
-      "**/dist": true,
-      "**/*-meta.xml": true,
-      "**/bower_components": true,
-      "**/.sfdx": true
-  },
-  "files.exclude": {
-      "**/.git": true,
-      "**/.svn": true,
-      "**/.hg": true,
-      "**/CVS": true,
-      "**/.DS_Store": true,
-      "**/node_modules": true
-  },
-  "eslint.nodePath": "/Users/charlesjonas/Documents/code/salesforcedx-vscode/packages/salesforcedx-vscode-lwc/node_modules",
-  "cSpell.words": [
-    "Chainable"
-  ]
+    "salesforcedx-vscode-core.show-cli-success-msg": false,
+    "salesforcedx-vscode-core.push-or-deploy-on-save.enabled": true,
+    "editor.formatOnSave": true,
+    "editor.formatOnSaveTimeout": 5000,
+    "search.exclude": {
+        "**/node_modules": true,
+        "**/dist": true,
+        "**/*-meta.xml": true,
+        "**/bower_components": true,
+        "**/.sfdx": true
+    },
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/node_modules": true
+    },
+    "cSpell.words": ["Chainable"]
 }

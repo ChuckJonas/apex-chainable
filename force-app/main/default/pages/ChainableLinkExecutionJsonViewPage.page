@@ -1,0 +1,21 @@
+<apex:page standardController="Chainable_Link_Execution__c">
+    <apex:includeLightning />
+    <div id="container">
+    </div>
+
+    <script>
+        $Lightning.use("c:ChainableJsonViewApp", function () {
+            $Lightning.createComponent(
+                "c:chainableJsonView",
+                {
+                    recordId: '{!Chainable_Link_Execution__c.Id}',
+                    objectApiName: 'Chainable_Link_Execution__c',
+                    jsonField: 'Response__c'
+                },
+                "container",
+                function (cmp) {
+                    console.log('component created');
+                });
+        });
+    </script>
+</apex:page>
