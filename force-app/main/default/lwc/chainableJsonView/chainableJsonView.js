@@ -1,6 +1,5 @@
 import { LightningElement, wire, api, track } from "lwc";
 import { getRecord } from "lightning/uiRecordApi";
-const FIELDS = ["Chainable_Link__c.Id", "Chainable_Link__c.Action_Data__c"];
 
 export default class ChainableJsonView extends LightningElement {
     @api recordId;

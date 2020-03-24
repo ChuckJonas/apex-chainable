@@ -3,7 +3,11 @@
         "experimentalDecorators": true,
         "baseUrl": ".",
         "paths": {
-            "c/chainableJsonView": ["chainableJsonView/chainableJsonView.js"]
+            "c/chainableJsonView": ["chainableJsonView/chainableJsonView.js"],
+            "c/chainableLinkJsonViewLWC": ["chainableLinkJsonViewLWC/chainableLinkJsonViewLWC.js"],
+            "c/chainableLinkExecutionJsonViewLWC": [
+                "chainableLinkExecutionJsonViewLWC/chainableLinkExecutionJsonViewLWC.js"
+            ]
         }
     },
     "include": ["**/*", "../../../../.sfdx/typings/lwc/**/*.d.ts"],
